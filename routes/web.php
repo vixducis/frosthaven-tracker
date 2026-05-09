@@ -13,7 +13,7 @@ Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::redirect('dashboard', '/campaigns')->name('dashboard');
 
     Route::get('campaigns', [CampaignController::class, 'index'])->name('campaigns.index');

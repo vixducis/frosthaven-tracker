@@ -38,10 +38,12 @@ function ResourceCounter({
     campaign,
     character,
     resource,
+    isOwner,
 }: {
     campaign: Campaign;
     character: Character;
     resource: CharacterResource;
+    isOwner: boolean;
 }) {
     function adjust(delta: number) {
         const newCount = Math.max(0, resource.count + delta);
@@ -54,6 +56,10 @@ function ResourceCounter({
             { count: newCount },
             { preserveScroll: true },
         );
+    }
+
+    if (!isOwner) {
+        return <span className="text-lg font-semibold tabular-nums">{resource.count}</span>;
     }
 
     return (
@@ -95,9 +101,9 @@ function TransferForm({
 
     const initialAmounts = Object.fromEntries(resourceTypes.map((t) => [t.value, 0]));
 
-    const { data, setData, post, processing, errors, reset } = useForm<Record<string, number>>(initialAmounts);
+    const { data, setData, processing, errors, reset } = useForm<Record<string, number>>(initialAmounts);
 
-    function handleSubmit(e: React.FormEvent) {
+    function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
 
         const transfers = Object.entries(data)
@@ -198,45 +204,58 @@ export default function CharacterShow({
                 <section>
                     <Heading title={character.name} />
 
-                    <Form
-                        {...CharacterController.update.form({ campaign: campaign.id, character: character.id })}
-                        options={{ preserveScroll: true }}
-                        className="mt-4 grid gap-4 sm:grid-cols-2"
-                    >
-                        {({ processing, errors }) => (
-                            <>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="gold">Gold</Label>
-                                    <Input
-                                        id="gold"
-                                        name="gold"
-                                        type="number"
-                                        min={0}
-                                        defaultValue={character.gold}
-                                    />
-                                    <InputError message={errors.gold} />
-                                </div>
+                    {isOwner ? (
+                        <Form
+                            {...CharacterController.update.form({ campaign: campaign.id, character: character.id })}
+                            options={{ preserveScroll: true }}
+                            className="mt-4 grid gap-4 sm:grid-cols-2"
+                        >
+                            {({ processing, errors }) => (
+                                <>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="gold">Gold</Label>
+                                        <Input
+                                            id="gold"
+                                            name="gold"
+                                            type="number"
+                                            min={0}
+                                            defaultValue={character.gold}
+                                        />
+                                        <InputError message={errors.gold} />
+                                    </div>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="experience">Experience</Label>
-                                    <Input
-                                        id="experience"
-                                        name="experience"
-                                        type="number"
-                                        min={0}
-                                        defaultValue={character.experience}
-                                    />
-                                    <InputError message={errors.experience} />
-                                </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="experience">Experience</Label>
+                                        <Input
+                                            id="experience"
+                                            name="experience"
+                                            type="number"
+                                            min={0}
+                                            defaultValue={character.experience}
+                                        />
+                                        <InputError message={errors.experience} />
+                                    </div>
 
-                                <div className="sm:col-span-2">
-                                    <Button type="submit" disabled={processing}>
-                                        {processing ? 'Saving…' : 'Save'}
-                                    </Button>
-                                </div>
-                            </>
-                        )}
-                    </Form>
+                                    <div className="sm:col-span-2">
+                                        <Button type="submit" disabled={processing}>
+                                            {processing ? 'Saving…' : 'Save'}
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
+                        </Form>
+                    ) : (
+                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label>Gold</Label>
+                                <span className="text-lg font-semibold">{character.gold}</span>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Experience</Label>
+                                <span className="text-lg font-semibold">{character.experience}</span>
+                            </div>
+                        </div>
+                    )}
                 </section>
 
                 <section>
@@ -260,6 +279,7 @@ export default function CharacterShow({
                                             campaign={campaign}
                                             character={character}
                                             resource={resource}
+                                            isOwner={isOwner}
                                         />
                                     )}
                                 </div>
@@ -268,7 +288,7 @@ export default function CharacterShow({
                     </div>
                 </section>
 
-                {!isRetired && (
+                {isOwner && !isRetired && (
                     <section className="rounded-lg border border-border bg-card p-6">
                         <Heading
                             variant="small"

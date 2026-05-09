@@ -54,7 +54,8 @@ class CampaignController extends Controller
             'inviteLink' => $isOwner && $campaign->invite_token
                 ? route('campaigns.invitations.show', $campaign->invite_token)
                 : null,
-            'userHasCharacter' => $campaign->characters()->where('user_id', $request->user()->id)->exists(),
+            'userHasCharacter' => $campaign->characters()->where('user_id', $request->user()->id)->whereNull('retired_at')->exists(),
+            'currentUserId' => $request->user()->id,
         ]);
     }
 }
