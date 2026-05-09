@@ -31,16 +31,14 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+# Copy application
+COPY . .
+
 # Install PHP dependencies
-COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Install Node dependencies
-COPY package.json package-lock.json ./
 RUN npm ci
-
-# Copy application
-COPY . .
 
 # Build frontend assets
 RUN npm run build && rm -rf node_modules
