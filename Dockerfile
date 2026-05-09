@@ -41,7 +41,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN npm ci
 
 # Build frontend assets
-RUN npm run build && rm -rf node_modules
+RUN npm run build
 
 # Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache \
