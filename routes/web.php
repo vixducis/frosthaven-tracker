@@ -7,11 +7,10 @@ use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterResourceController;
 use App\Http\Controllers\ResourceTransferController;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 
-Route::inertia('/', 'welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+Route::get('/', function () {
+    return redirect()->route(auth()->check() ? 'campaigns.index' : 'login');
+})->name('home');
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('dashboard', '/campaigns')->name('dashboard');
