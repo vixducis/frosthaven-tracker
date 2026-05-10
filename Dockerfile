@@ -44,8 +44,8 @@ RUN npm ci
 RUN npm run build
 
 # Set permissions
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+RUN chown -R www-data:www-data storage bootstrap/cache database \
+    && chmod -R 775 storage bootstrap/cache database
 
 # Copy config files
 COPY docker/nginx.conf /etc/nginx/nginx.conf
