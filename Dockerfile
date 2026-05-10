@@ -40,6 +40,11 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 # Install Node dependencies
 RUN npm ci
 
+# Generate Wayfinder TypeScript files (requires a valid APP_KEY to boot Laravel)
+RUN APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+    DB_CONNECTION=sqlite DB_DATABASE=/dev/null \
+    php artisan wayfinder:generate --no-interaction
+
 # Build frontend assets
 RUN npm run build
 
