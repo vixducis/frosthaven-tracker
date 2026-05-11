@@ -34,6 +34,7 @@ type Character = {
     name: string;
     gold: number;
     experience: number;
+    level: number;
     retired_at: string | null;
     user: { id: number; name: string };
     resources: CharacterResource[];
@@ -173,6 +174,7 @@ export default function CampaignShow({
     inviteLink,
     userHasCharacter,
     currentUserId,
+    monsterLevel,
 }: {
     campaign: Campaign;
     resourceTypes: ResourceType[];
@@ -180,6 +182,7 @@ export default function CampaignShow({
     inviteLink: string | null;
     userHasCharacter: boolean;
     currentUserId: number;
+    monsterLevel: number;
 }) {
     setLayoutProps({
         breadcrumbs: [
@@ -199,7 +202,15 @@ export default function CampaignShow({
             <div className="space-y-10">
                 {myCharacter && (
                     <section>
-                        <Heading title={myCharacter.name} description="Your active character." />
+                        <header className="mb-4 space-y-0.5">
+                            <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
+                                {myCharacter.name}
+                                <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
+                                    Lvl {myCharacter.level}
+                                </span>
+                            </h2>
+                            <p className="text-sm text-muted-foreground">Your active character.</p>
+                        </header>
 
                         <div className="rounded-lg border border-border bg-card p-4">
                             <div className="mb-3 space-y-2">
@@ -272,7 +283,16 @@ export default function CampaignShow({
                 )}
 
                 <section>
-                    <Heading title="Campaign pool" description="Shared resources available to all characters." />
+                    <header className="mb-4 flex items-start justify-between gap-4">
+                        <div className="space-y-0.5">
+                            <h2 className="text-xl font-semibold tracking-tight">Campaign pool</h2>
+                            <p className="text-sm text-muted-foreground">Shared resources available to all characters.</p>
+                        </div>
+                        <div className="shrink-0 text-right">
+                            <p className="text-xs text-muted-foreground">Monster level</p>
+                            <p className="text-2xl font-bold tabular-nums">{monsterLevel}</p>
+                        </div>
+                    </header>
 
                     <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                         {resourceTypes.map((type) => {
@@ -300,7 +320,12 @@ export default function CampaignShow({
                                     href={showCharacter.url({ campaign: campaign.id, character: character.id })}
                                     className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:bg-accent hover:text-accent-foreground"
                                 >
-                                    <span className="font-medium">{character.name}</span>
+                                    <span className="flex items-center gap-2 font-medium">
+                                        {character.name}
+                                        <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
+                                            Lvl {character.level}
+                                        </span>
+                                    </span>
                                     <span className="text-sm text-muted-foreground">{character.user.name}</span>
                                 </Link>
                             ))}

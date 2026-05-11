@@ -114,4 +114,47 @@ class CampaignControllerTest extends TestCase
             ->get("/campaigns/{$campaign->id}")
             ->assertForbidden();
     }
+
+    public function test_show_passes_monster_level_zero_when_no_characters(): void
+    {
+        $user = User::factory()->create();
+        $campaign = Campaign::factory()->create(['user_id' => $user->id]);
+
+        $this->withoutVite()->actingAs($user)
+            ->get("/campaigns/{$campaign->id}")
+            ->assertInertia(fn ($page) => $page->where('monsterLevel', 0));
+    }
+
+    public function test_show_passes_monster_level_based_on_average_character_level(): void
+    {
+        $user = User::factory()->create();
+        $campaign = Campaign::factory()->create(['user_id' => $user->id]);
+
+        // Two characters: level 1 (0 XP) and level 3 (95 XP) → avg 2 → ceil(2/2) = 1
+        Character::factory()->create(['campaign_id' => $campaign->id, 'user_id' => $user->id, 'experience' => 0]);
+        $other = User::factory()->create();
+        $campaign->members()->attach($other);
+        Character::factory()->create(['campaign_id' => $campaign->id, 'user_id' => $other->id, 'experience' => 95]);
+
+        $this->withoutVite()->actingAs($user)
+            ->get("/campaigns/{$campaign->id}")
+            ->assertInertia(fn ($page) => $page->where('monsterLevel', 1));
+    }
+
+    public function test_show_excludes_retired_characters_from_monster_level(): void
+    {
+        $user = User::factory()->create();
+        $campaign = Campaign::factory()->create(['user_id' => $user->id]);
+
+        // Active character at level 1 (0 XP) → monster level 1
+        Character::factory()->create(['campaign_id' => $campaign->id, 'user_id' => $user->id, 'experience' => 0]);
+        // Retired character at level 9 (500 XP) — should not affect monster level
+        $other = User::factory()->create();
+        $campaign->members()->attach($other);
+        Character::factory()->create(['campaign_id' => $campaign->id, 'user_id' => $other->id, 'experience' => 500, 'retired_at' => now()]);
+
+        $this->withoutVite()->actingAs($user)
+            ->get("/campaigns/{$campaign->id}")
+            ->assertInertia(fn ($page) => $page->where('monsterLevel', 1));
+    }
 }

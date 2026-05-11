@@ -25,6 +25,7 @@ type Character = {
     name: string;
     gold: number;
     experience: number;
+    level: number;
     retired_at: string | null;
     resources: CharacterResource[];
 };
@@ -202,7 +203,14 @@ export default function CharacterShow({
                 )}
 
                 <section>
-                    <Heading title={character.name} />
+                    <header className="mb-4 space-y-0.5">
+                        <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
+                            {character.name}
+                            <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
+                                Lvl {character.level}
+                            </span>
+                        </h2>
+                    </header>
 
                     {isOwner ? (
                         <Form

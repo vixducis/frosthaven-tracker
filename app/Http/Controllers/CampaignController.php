@@ -56,6 +56,7 @@ class CampaignController extends Controller
                 : null,
             'userHasCharacter' => $campaign->characters()->where('user_id', $request->user()->id)->whereNull('retired_at')->exists(),
             'currentUserId' => $request->user()->id,
+            'monsterLevel' => $campaign->monsterLevel(),
         ]);
     }
 }

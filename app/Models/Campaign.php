@@ -53,4 +53,21 @@ class Campaign extends Model
     {
         return $this->resources->firstWhere('resource_type', $type->value)?->count ?? 0;
     }
+
+    /**
+     * Calculate the recommended monster level based on the average active character level.
+     *
+     * Monster level = ceil(average character level / 2), or 0 when no active characters.
+     * Requires the characters relationship to be loaded.
+     */
+    public function monsterLevel(): int
+    {
+        $active = $this->characters->whereNull('retired_at');
+
+        if ($active->isEmpty()) {
+            return 0;
+        }
+
+        return (int) ceil($active->avg(fn (Character $c) => $c->level) / 2);
+    }
 }

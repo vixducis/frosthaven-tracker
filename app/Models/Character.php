@@ -16,6 +16,8 @@ class Character extends Model
 
     protected $fillable = ['campaign_id', 'user_id', 'name', 'gold', 'experience', 'retired_at'];
 
+    protected $appends = ['level'];
+
     protected function casts(): array
     {
         return [
@@ -44,5 +46,27 @@ class Character extends Model
     public function resourceCount(ResourceType $type): int
     {
         return $this->resources->firstWhere('resource_type', $type->value)?->count ?? 0;
+    }
+
+    /**
+     * XP thresholds for each level (index = level - 1).
+     *
+     * @var array<int, int>
+     */
+    public const XP_THRESHOLDS = [0, 45, 95, 150, 210, 275, 345, 420, 500];
+
+    /**
+     * Get the character's level based on their current experience.
+     */
+    public function getLevelAttribute(): int
+    {
+        $level = 1;
+        foreach (self::XP_THRESHOLDS as $index => $threshold) {
+            if ($this->experience >= $threshold) {
+                $level = $index + 1;
+            }
+        }
+
+        return $level;
     }
 }
