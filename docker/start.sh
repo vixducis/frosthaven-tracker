@@ -4,8 +4,9 @@ set -e
 # Run migrations
 php artisan migrate --force
 
-# Start PHP-FPM in background
-php-fpm -D
+# Keep PHP-FPM in foreground mode so its Docker stdout/stderr descriptors
+# remain connected. The shell backgrounds it while nginx becomes PID 1.
+php-fpm -F &
 
 # Start nginx in foreground
-nginx -g "daemon off;"
+exec nginx -g "daemon off;"

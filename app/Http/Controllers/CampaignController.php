@@ -15,7 +15,17 @@ class CampaignController extends Controller
 {
     public function index(Request $request): Response
     {
-        $campaigns = $request->user()->campaigns()->latest()->get();
+        $userId = $request->user()->id;
+
+        $campaigns = Campaign::query()
+            ->where(function ($campaigns) use ($userId) {
+                $campaigns
+                    ->where('user_id', $userId)
+                    ->orWhereHas('members', fn ($members) => $members->whereKey($userId))
+                    ->orWhereHas('characters', fn ($characters) => $characters->where('user_id', $userId));
+            })
+            ->latest()
+            ->get();
 
         return Inertia::render('campaigns/index', [
             'campaigns' => $campaigns,

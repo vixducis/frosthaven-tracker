@@ -38,6 +38,39 @@ class CampaignControllerTest extends TestCase
             ->assertInertia(fn ($page) => $page->component('campaigns/index'));
     }
 
+    public function test_index_shows_every_campaign_the_user_can_access(): void
+    {
+        $user = User::factory()->create();
+
+        $ownedCampaign = Campaign::factory()->create(['user_id' => $user->id]);
+
+        $joinedCampaign = Campaign::factory()->create();
+        $joinedCampaign->members()->attach($user);
+
+        $characterCampaign = Campaign::factory()->create();
+        Character::factory()->create([
+            'campaign_id' => $characterCampaign->id,
+            'user_id' => $user->id,
+            'retired_at' => now(),
+        ]);
+
+        Campaign::factory()->create();
+
+        $accessibleCampaignIds = [$ownedCampaign->id, $joinedCampaign->id, $characterCampaign->id];
+        sort($accessibleCampaignIds);
+
+        $this->withoutVite()->actingAs($user)
+            ->get('/campaigns')
+            ->assertInertia(fn ($page) => $page
+                ->component('campaigns/index')
+                ->has('campaigns', 3)
+                ->where('campaigns', function ($campaigns) use ($accessibleCampaignIds) {
+                    $actualCampaignIds = $campaigns->pluck('id')->sort()->values()->all();
+
+                    return $actualCampaignIds === $accessibleCampaignIds;
+                }));
+    }
+
     public function test_store_creates_campaign_with_all_resource_types(): void
     {
         $user = User::factory()->create();
