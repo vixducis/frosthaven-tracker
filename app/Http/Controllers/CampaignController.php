@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ResourceType;
 use App\Models\Campaign;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -38,7 +39,12 @@ class CampaignController extends Controller
     {
         Gate::authorize('view', $campaign);
 
-        $campaign->load(['resources', 'characters.resources', 'characters.user']);
+        $campaign->load([
+            'resources',
+            'characters' => fn (HasMany $characters): HasMany => $characters
+                ->whereNull('retired_at')
+                ->with(['resources', 'user']),
+        ]);
 
         $resourceTypes = array_map(
             fn (ResourceType $type) => ['value' => $type->value, 'label' => $type->label()],

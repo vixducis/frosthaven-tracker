@@ -104,6 +104,28 @@ class CampaignControllerTest extends TestCase
             ->assertInertia(fn ($page) => $page->where('userHasCharacter', true));
     }
 
+    public function test_show_only_includes_active_characters(): void
+    {
+        $user = User::factory()->create();
+        $campaign = Campaign::factory()->create(['user_id' => $user->id]);
+        Character::factory()->create([
+            'campaign_id' => $campaign->id,
+            'user_id' => $user->id,
+            'retired_at' => now(),
+        ]);
+        $activeCharacter = Character::factory()->create([
+            'campaign_id' => $campaign->id,
+            'user_id' => $user->id,
+        ]);
+
+        $this->withoutVite()->actingAs($user)
+            ->get("/campaigns/{$campaign->id}")
+            ->assertInertia(fn ($page) => $page
+                ->has('campaign.characters', 1)
+                ->where('campaign.characters.0.id', $activeCharacter->id)
+                ->where('campaign.characters.0.retired_at', null));
+    }
+
     public function test_show_forbidden_for_non_member(): void
     {
         $owner = User::factory()->create();
