@@ -12,6 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('characters', function (Blueprint $table) {
+            $table->index('campaign_id');
+        });
+
+        Schema::table('characters', function (Blueprint $table) {
             $table->dropUnique(['campaign_id', 'user_id']);
         });
     }
@@ -23,6 +27,10 @@ return new class extends Migration
     {
         Schema::table('characters', function (Blueprint $table) {
             $table->unique(['campaign_id', 'user_id']);
+        });
+
+        Schema::table('characters', function (Blueprint $table) {
+            $table->dropIndex(['campaign_id']);
         });
     }
 };
